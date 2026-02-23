@@ -33,6 +33,8 @@ has pubsub => sub {
 
 has url => sub { Mojo::URL->new($ENV{MOJO_REDIS_URL}) };
 
+has tls => 0;
+
 sub cache  { Mojo::Redis::Cache->new(redis => shift, @_) }
 sub cursor { Mojo::Redis::Cursor->new(redis => shift, command => [@_ ? @_ : (scan => 0)]) }
 sub db     { Mojo::Redis::Database->new(redis => shift) }
@@ -53,6 +55,7 @@ sub _connection {
     encoding => $self->encoding,
     protocol => $self->protocol_class->new(api => 1),
     url      => $self->url->clone,
+    tls      => $self->tls,
     %args
   );
 

@@ -13,6 +13,7 @@ has encoding => sub { Carp::confess('encoding is required in constructor') };
 has ioloop   => sub { Carp::confess('ioloop is required in constructor') };
 has protocol => sub { Carp::confess('protocol is required in constructor') };
 has url      => sub { Carp::confess('url is required in constructor') };
+has tls      => 0;
 
 sub DESTROY {
   my $self = shift;
@@ -85,7 +86,7 @@ sub _connect {
 
 sub _connect_args {
   my ($self, $url, $defaults) = @_;
-  my %args = (address => $url->host || 'localhost');
+  my %args = (address => $url->host || 'localhost', tls => $self->tls);
 
   if (file_name_is_absolute $args{address}) {
     $args{path} = delete $args{address};
