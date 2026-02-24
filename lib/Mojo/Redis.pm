@@ -203,6 +203,23 @@ least version 0.06, or falls back to L<Protocol::Redis::Faster>.
 Lazy builds an instance of L<Mojo::Redis::PubSub> for this object, instead of
 returning a new instance like L</db> does.
 
+=head2 tls
+
+  $tls   = $redis->tls;
+  $redis = $redis->tls(1);
+  $redis = $redis->tls({tls_ca => '/etc/tls/ca.crt', tls_key => '/etc/tls/client.key'});
+
+Enables TLS for connections to the Redis server. The value of this attribute
+will be passed on to L<Mojo::Redis::Connection/tls> when a new connection is
+created. This means that updating this attribute will not change any connection
+that is already in use.
+
+Can be set to a true scalar value to enable TLS with default settings, or to a
+hash reference with C<tls_> prefixed keys for fine-grained TLS configuration.
+See L<Mojo::Redis::Connection/tls> for supported keys and examples.
+
+Defaults to C<0> (TLS disabled).
+
 =head2 url
 
   $url   = $redis->url;

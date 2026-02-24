@@ -86,7 +86,17 @@ sub _connect {
 
 sub _connect_args {
   my ($self, $url, $defaults) = @_;
-  my %args = (address => $url->host || 'localhost', tls => $self->tls);
+  my $tls  = $self->tls;
+  my %args = (address => $url->host || 'localhost');
+
+  ## Apply TLS settings: hashref merges tls_ keys, truthy scalar sets tls => 1
+  if (ref $tls eq 'HASH') {
+    $args{tls} = 1;
+    $args{$_} = $tls->{$_} for grep {/^tls_/} keys %$tls;
+  }
+  elsif ($tls) {
+    $args{tls} = 1;
+  }
 
   if (file_name_is_absolute $args{address}) {
     $args{path} = delete $args{address};
@@ -330,6 +340,42 @@ Holds an instance of L<Mojo::IOLoop>.
 
 Holds a protocol object, such as L<Protocol::Redis::Faster> that is used to
 generate and parse Redis messages.
+
+=head2 tls
+
+  $tls  = $conn->tls;
+  $conn = $conn->tls(1);
+  $conn = $conn->tls({tls_ca => '/etc/tls/ca.crt', tls_cert => '/etc/tls/client.crt'});
+
+Enables TLS for the connection to the Redis server. Can be set to a true
+scalar value to enable TLS with default settings, or to a hash reference for
+fine-grained TLS configuration.
+
+When set to a hash reference, the keys must be prefixed with C<tls_> to be
+passed through as connection arguments. Any keys not starting with C<tls_> are
+silently ignored. The C<tls> flag is set to C<1> automatically.
+
+See L<Mojo::IOLoop::Client> for the full list of supported TLS options,
+including C<tls_ca>, C<tls_cert>, C<tls_key>, C<tls_ciphers>,
+C<tls_protocols>, C<tls_verify>, C<tls_version>, and C<tls_options>.
+
+  # Simple TLS with defaults
+  $conn->tls(1);
+
+  # TLS with custom CA and client certificate
+  $conn->tls({
+    tls_ca   => '/etc/tls/ca.crt',
+    tls_cert => '/etc/tls/client.crt',
+    tls_key  => '/etc/tls/client.key',
+  });
+
+  # TLS with additional IO::Socket::SSL options
+  $conn->tls({
+    tls_ca      => '/etc/tls/ca.crt',
+    tls_options => {SSL_verify_mode => 0x00},
+  });
+
+Defaults to C<0> (TLS disabled).
 
 =head2 url
 
